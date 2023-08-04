@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de usuário</title>
+    <style>
+        body {
+            font-family: "Arial", sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2;
+        }
+
+        form {
+            background-color: #ffffff;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center the inputs */
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 5px;
+            text-align: left; /* Align the labels to the left */
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        input[type="submit"] {
+            background-color: #FF8000;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FF8C00;
+        }
+
+        input:focus {
+            outline: none;
+            border: 1px solid #007bff;
+        }
+
+        input[type="submit"]:focus {
+            outline: none;
+        }
+        .login-btn {
+            font-size: 11px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="{{ url_for('auth.register') }}" method="post">
+        <h1>Registro de usuário</h1>
+        {% if error %}
+            <p>{{ error }}</p>
+        {% endif %}
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="nome_sgd">Nome que é utilizado no SGD:</label>
+        <input type="text" id="nome_sgd" name="nome_sgd" required>
+        <label for="is_admin">Admin</label>
+        <input type="checkbox" id="isAdmin" name="isAdmin" value="True">
+        <input type="hidden" name="register" value="register">
+        <input type="submit" value="Registrar">
+        <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
+    </form>
+</body>
+</html>

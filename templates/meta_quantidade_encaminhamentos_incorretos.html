@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Template Flask</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #000000;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #FF8000;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    header nav ul li {
+      display: inline-block;
+      margin-right: 20px;
+    }
+
+    header nav ul li a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #FFA500;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Estilo da tabela */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f2f2f
+    }
+    .analise_analista {
+      width: 800px;
+      height: 60px;
+    }
+    .input_analise_analista{
+      width: 700px;
+      height: 50px;
+    }
+    .button_envia_analise_analista{
+        background-color: #FFA500;
+        color: #ffffff;
+        border: none;
+        padding: 5px 10px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+    .form-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .form-container form {
+      margin-right: 10px;
+    }
+
+    /* Estilos para o menu suspenso */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #FFA500;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content li {
+      padding: 20px;
+      text-decoration: none;
+      display: block;
+      margin:0px
+    }
+
+    .dropdown-content li:hover {
+      background-color: #FF8000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('routes.listar_encaminhamentos_incorretos_validados')}}">Validados</a></li>
+        <li><a href="{{ url_for('routes.listar_encaminhamentos_incorretos_invalidados')}}">Invalidados</a></li>
+        <li><a href="{{ url_for('routes.listar_todos_encaminhamentos')}}">Todos os Encaminhamentos</a></li>
+        <li><a href="{{ url_for('routes.listar_meus_encaminhamentos_para_analise')}}">Encaminhamentos para análise</a></li>
+        {% if user.is_authenticated and user.isAdmin %}
+          <li><a href="{{ url_for('routes.encaminhamentos_para_validacao')}}">Painel</a></li>
+          <li class="dropdown">
+            <a href="javascript:void(0);" class="dropbtn">Meta</a>
+            <ul class="dropdown-content">
+              <li><a href="{{ url_for('routes.meta_percent_encaminhamentos')}}">Meta encaminhamentos incorretos</a></li>
+              <li><a href="{{ url_for('routes.meta_percent_encaminhamentos_acumulado')}}">Meta encaminhamentos incorretos acumulado</a></li>
+              <li><a href="{{ url_for('routes.meta_quantidade_encaminhamentos')}}">Quantidade de encaminhamentos total</a></li>
+              <li><a href="{{ url_for('routes.meta_quantidade_encaminhamentos_incorretos')}}">Quantidade de encaminhamentos incorretos</a></li>
+            </ul>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% if user.is_authenticated and user.isAdmin %}
+    <div class="form-container">
+      <form action="{{ url_for('routes.atualiza_todos_encaminhamento') }}" method="post">
+        <input type="hidden" name="atualiza_encaminhamentos_incorretos" value="atualiza_encaminhamentos_incorretos">
+        <button type="submit">Atualizar Encaminhamentos</button>
+      </form>
+    {% endif %}
+    <form action="{{ url_for('routes.logout') }}" method="post">
+      <button type="submit">Logout</button>
+    </form>
+    </div>
+  </header>
+  <!-- Tabela de Usuários e Meses -->
+  <table>
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th>Janeiro</th>
+        <th>Fevereiro</th>
+        <th>Março</th>
+        <th>Abril</th>
+        <th>Maio</th>
+        <th>Junho</th>
+        <th>Julho</th>
+        <th>Agosto</th>
+        <th>Setembro</th>
+        <th>Outubro</th>
+        <th>Novembro</th>
+        <th>Dezembro</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Exemplo de linha com um usuário -->
+      {% for analista, dados_encaminhamentos in dict_encaminhamentos_incorretos_agrupados.items() %}
+      <tr>
+        <td>{{ analista }}</td>
+            {% for dado in dados_encaminhamentos %}
+              {% if dado['quantidade'] > 0 %}
+                <td class="{% if dado['quantidade'] >= 97 %}greater-than-97{% elif dado['quantidade']  < 97 and  dado['quantidade'] > 93 %}between-93-and-97{% else %}less-than-93{% endif %}">{{ dado['quantidade'] }}</td>
+              {% else %}
+                <td>0</td>
+              {% endif %}
+            {% endfor %}
+      </tr>
+      {% endfor %}
+      <!-- ... (adicionar mais linhas de usuários conforme necessário) ... -->
+    </tbody>
+  </table>
+</body>
+</html>
