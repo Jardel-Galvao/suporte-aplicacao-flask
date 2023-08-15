@@ -28,6 +28,7 @@
     header nav ul li {
       display: inline-block;
       margin-right: 20px;
+      padding: 15px
     }
 
     header nav ul li a {
@@ -110,6 +111,9 @@
     .dropdown-content li:hover {
       background-color: #FF8000;
     }
+    header nav ul li:hover{
+      background-color: #FFA500;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +126,7 @@
         <li><a href="{{ url_for('routes.listar_meus_encaminhamentos_para_analise')}}">Encaminhamentos para análise</a></li>
         {% if user.is_authenticated and user.isAdmin %}
           <li><a href="{{ url_for('routes.encaminhamentos_para_validacao')}}">Painel</a></li>
+          <li><a href="{{ url_for('routes.ignorar_mes')}}">Ignorar mes</a></li>
           <li class="dropdown">
             <a href="javascript:void(0);" class="dropbtn">Meta</a>
             <ul class="dropdown-content">
@@ -167,11 +172,11 @@
     </thead>
     <tbody>
       <!-- Exemplo de linha com um usuário -->
-      {% for analista, dados_encaminhamentos in dict_encaminhamentos_agrupados.items() %}
+      {% for analista in dict_encaminhamentos_mes %}
       <tr>
-        <td>{{ analista }}</td>
-            {% for dado in dados_encaminhamentos%}
-              <td class="{% if dado['quantidade'] >= 97 %}greater-than-97{% elif dado['quantidade']  < 97 and  dado['quantidade'] > 93 %}between-93-and-97{% else %}less-than-93{% endif %}">{{ dado['quantidade'] }}</td>
+        <td>{{ analista['analista'] }}</td>
+            {% for mes in analista['meses'] %}
+              <td >{{ mes['quantidade'] }}</td>
             {% endfor %}
       </tr>
       {% endfor %}

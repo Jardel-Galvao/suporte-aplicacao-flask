@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 database = SQLAlchemy()
 
 class User(database.Model, UserMixin):
+    __tablename__ = 'user'
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(80), unique=True, nullable=False)  # Define 'username' field
     nome_sgd = database.Column(database.String(120), nullable=False)
@@ -12,8 +13,6 @@ class User(database.Model, UserMixin):
     ativo = database.Column(database.Boolean, default=True)
     isAdmin = database.Column(database.Boolean, default=False)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
 class Encaminhamentos(database.Model):
     __tablename__ = 'encaminhamentos'
     id = database.Column(database.Integer, primary_key=True, autoincrement=True)  # Unique identifier for each row
@@ -25,9 +24,6 @@ class Encaminhamentos(database.Model):
     modulo = database.Column(database.String)
     topico = database.Column(database.String)
 
-    def __repr__(self):
-        return f'<SS {self.ss}>'
-
 class EncaminhamentosIncorretos(Encaminhamentos):
     __tablename__ = 'encaminhamentos_incorretos'
     id = database.Column(database.Integer, database.ForeignKey('encaminhamentos.id'), primary_key=True)
@@ -38,11 +34,11 @@ class EncaminhamentosIncorretos(Encaminhamentos):
     status = database.Column(database.Boolean, default=False)
     descricao_validacao = database.Column(database.Text, default="")
 
-    def __repr__(self):
-        return f'<SS {self.ss}>'
-
 class DataConsultaSgd(database.Model):
     data = database.Column(database.Date, primary_key=True)
 
-    def __repr__(self):
-        return f'<Data {self.data}>'
+class IgnorarMes(database.Model):
+    __tablename__ = 'IgnorarMes'
+    id = database.Column(database.Integer, primary_key=True)
+    id_analista = database.Column(database.Integer, database.ForeignKey('user.id'))
+    mes = database.Column(database.Integer)

@@ -28,6 +28,7 @@
     header nav ul li {
       display: inline-block;
       margin-right: 20px;
+      padding: 15px
     }
 
     header nav ul li a {
@@ -118,6 +119,12 @@
     td.less-than-93{
       background-color: #FF6347;
     }
+    td.0{
+      background-color: #F0F8FF;
+    }
+    header nav ul li:hover{
+      background-color: #FFA500;
+    }
   </style>
 </head>
 <body>
@@ -130,6 +137,7 @@
         <li><a href="{{ url_for('routes.listar_meus_encaminhamentos_para_analise')}}">Encaminhamentos para análise</a></li>
         {% if user.is_authenticated and user.isAdmin %}
           <li><a href="{{ url_for('routes.encaminhamentos_para_validacao')}}">Painel</a></li>
+          <li><a href="{{ url_for('routes.ignorar_mes')}}">Ignorar mes</a></li>
           <li class="dropdown">
             <a href="javascript:void(0);" class="dropbtn">Meta</a>
             <ul class="dropdown-content">
@@ -174,16 +182,15 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Exemplo de linha com um usuário -->
-      {% for analista, dados_encaminhamentos in dict_encaminhamentos_agrupados.items() %}
-      <tr>
-        <td>{{ analista }}</td>
-            {% for dado in dados_encaminhamentos%}
-              <td class="{% if dado['media_acumulada'] >= 97 %}greater-than-97{% elif dado['media_acumulada']  < 97 and  dado['media_acumulada'] > 93 %}between-93-and-97{% else %}less-than-93{% endif %}">{{ dado['media_acumulada'] }}</td>
-            {% endfor %}
-      </tr>
+      {% for dados_encaminhamentos in encaminhamentos_por_analista_mes_acumulado %}
+        <tr>
+          <td>{{ dados_encaminhamentos['analista'] }}</td>
+          {% for mes in dados_encaminhamentos['meses']%}
+            <td class="{% if mes['media_acumulada'] >= 97 %}greater-than-97{% elif mes['media_acumulada'] >= 93 and mes['media_acumulada'] < 97 %}between-93-and-97{% elif mes['media_acumulada'] == 0%}td.0{% else %}less-than-93{% endif%}">
+              {{ mes['media_acumulada'] }}</td>
+          {% endfor %}
+        </tr>
       {% endfor %}
-      <!-- ... (adicionar mais linhas de usuários conforme necessário) ... -->
     </tbody>
   </table>
 </body>
