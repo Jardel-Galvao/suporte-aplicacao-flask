@@ -1,30 +1,40 @@
 from flask import Flask
 from flask_login import LoginManager
-from models.models import User, database
+from models.models import database, User
 
-# Configurações do Flask
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'sua_chave_secreta'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Códigos Python/suporte-aplicacao-flask/instance/database.db'
+login_manager = LoginManager()
 
-# Inicialize o LoginManager com a aplicação Flask
-login_manager = LoginManager(app)
-login_manager.login_view = 'auth.login'
-login_manager.init_app(app)
-database.init_app(app)
+def load_config(app):
+    app.config.from_object('config.Config')
 
-# Importe os blueprints e registre-os com a aplicação Flask
-from routes.routes import routes_bp
-app.register_blueprint(routes_bp)
-from auth.auth import auth_bp
-app.register_blueprint(auth_bp)
+def configure_login_manager(app):
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+def ini_database(app):
+    database.init_app(app)
+    with app.app_context():
+        database.create_all()
+
+def register_blueprints(app):
+    from routes.routes import routes_bp
+    from auth.auth import auth_bp
+    app.register_blueprint(routes_bp)
+    app.register_blueprint(auth_bp)
+
+def create_app():
+    app = Flask(__name__)
+    configure_login_manager(app)
+    load_config(app)
+    ini_database(app)
+    register_blueprints(app)
+
+    return app
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-with app.app_context():
-    database.create_all()
-
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)

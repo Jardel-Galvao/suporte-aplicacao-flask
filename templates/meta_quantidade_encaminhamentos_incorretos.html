@@ -114,6 +114,13 @@
     header nav ul li:hover{
       background-color: #FFA500;
     }
+    .analista{
+      font-weight: bold;
+    }
+    .media-equipe{
+      font-weight: bold;
+      background-color: #DCDCDC;
+    }
   </style>
 </head>
 <body>
@@ -127,6 +134,7 @@
         {% if user.is_authenticated and user.isAdmin %}
           <li><a href="{{ url_for('routes.encaminhamentos_para_validacao')}}">Painel</a></li>
           <li><a href="{{ url_for('routes.ignorar_mes')}}">Ignorar mes</a></li>
+          <li><a href="{{ url_for('routes.adicionar_encaminhamento_incorreto_manual')}}">Adicionar encaminhamento</a></li>
           <li class="dropdown">
             <a href="javascript:void(0);" class="dropbtn">Meta</a>
             <ul class="dropdown-content">
@@ -174,7 +182,7 @@
       <!-- Exemplo de linha com um usuário -->
       {% for analista in dict_encaminhamentos_incorreto_mes %}
       <tr>
-        <td>{{ analista['analista'] }}</td>
+        <td class="{% if analista['analista'] != 'Média equipe'%}analista{% else %}media-equipe{% endif%}">{{ analista['analista'] }}</td>
             {% for mes in analista['meses'] %}
               <td >{{ mes['quantidade'] }}</td>
             {% endfor %}

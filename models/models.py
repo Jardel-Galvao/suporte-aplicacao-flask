@@ -35,6 +35,7 @@ class EncaminhamentosIncorretos(Encaminhamentos):
     descricao_validacao = database.Column(database.Text, default="")
 
 class DataConsultaSgd(database.Model):
+    id =  database.Column(database.Integer, primary_key=True)
     data = database.Column(database.Date, primary_key=True)
 
 class IgnorarMes(database.Model):

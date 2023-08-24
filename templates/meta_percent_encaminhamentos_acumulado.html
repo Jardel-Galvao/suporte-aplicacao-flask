@@ -125,6 +125,13 @@
     header nav ul li:hover{
       background-color: #FFA500;
     }
+    .analista{
+      font-weight: bold;
+    }
+    .media-equipe{
+      font-weight: bold;
+      background-color: #DCDCDC;
+    }
   </style>
 </head>
 <body>
@@ -138,6 +145,7 @@
         {% if user.is_authenticated and user.isAdmin %}
           <li><a href="{{ url_for('routes.encaminhamentos_para_validacao')}}">Painel</a></li>
           <li><a href="{{ url_for('routes.ignorar_mes')}}">Ignorar mes</a></li>
+          <li><a href="{{ url_for('routes.adicionar_encaminhamento_incorreto_manual')}}">Adicionar encaminhamento</a></li>
           <li class="dropdown">
             <a href="javascript:void(0);" class="dropbtn">Meta</a>
             <ul class="dropdown-content">
@@ -166,7 +174,7 @@
   <table>
     <thead>
       <tr>
-        <th>ANalista</th>
+        <th>Analista</th>
         <th>Janeiro</th>
         <th>Fevereiro</th>
         <th>Março</th>
@@ -184,10 +192,10 @@
     <tbody>
       {% for dados_encaminhamentos in encaminhamentos_por_analista_mes_acumulado %}
         <tr>
-          <td>{{ dados_encaminhamentos['analista'] }}</td>
+          <td class="{% if dados_encaminhamentos['analista'] != 'Média equipe'%}analista{% else %}media-equipe{% endif%}">{{ dados_encaminhamentos['analista']}}</td>
           {% for mes in dados_encaminhamentos['meses']%}
-            <td class="{% if mes['media_acumulada'] >= 97 %}greater-than-97{% elif mes['media_acumulada'] >= 93 and mes['media_acumulada'] < 97 %}between-93-and-97{% elif mes['media_acumulada'] == 0%}td.0{% else %}less-than-93{% endif%}">
-              {{ mes['media_acumulada'] }}</td>
+            <td class="{% if mes['media'] >= 97 %}greater-than-97{% elif mes['media'] >= 93 and mes['media'] < 97 %}between-93-and-97{% elif mes['media'] == 0%}td.0{% else %}less-than-93{% endif%}">
+              {{ mes['media'] }}</td>
           {% endfor %}
         </tr>
       {% endfor %}
