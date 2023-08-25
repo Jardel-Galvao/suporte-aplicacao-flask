@@ -1,9 +1,13 @@
 from flask import render_template,  Blueprint, flash,  redirect, url_for, request
-from models.models import Encaminhamentos, EncaminhamentosIncorretos, DataConsultaSgd, User, IgnorarMes
+from ..models.user import User
+from ..models.encaminhamentos import Encaminhamentos
+from ..models.encaminhamentos_incorretos import EncaminhamentosIncorretos
+from ..models.data_consulta_sg import DataConsultaSgd
+from ..models.ignora_mes import IgnorarMes
 from datetime import datetime, timedelta
-from libs.importa_arquivo_sql import import_sql_file
-from libs.conecta_sgd import connecta_sgd
-from models.models import database
+from ..libs.importa_arquivo_sql import import_sql_file
+from ..libs.conecta_sgd import connecta_sgd
+from ..models import database
 from flask_login import login_required, logout_user, current_user
 import pandas as pd
 import openpyxl
