@@ -1,8 +1,8 @@
-from flask import render_template,  Blueprint, flash,   redirect, url_for, request
+from flask import render_template,  Blueprint, flash,  redirect, url_for, request
 from models.models import Encaminhamentos, EncaminhamentosIncorretos, DataConsultaSgd, User, IgnorarMes
 from datetime import datetime, timedelta
 from libs.importa_arquivo_sql import import_sql_file
-from libs.connecta_sgd import connecta_sgd
+from libs.conecta_sgd import connecta_sgd
 from models.models import database
 from flask_login import login_required, logout_user, current_user
 import pandas as pd
