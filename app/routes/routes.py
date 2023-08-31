@@ -1,4 +1,5 @@
 from flask import render_template,  Blueprint, flash,  redirect, url_for, request
+from app.auth.auth import admin_required
 from ..models.user import User
 from ..models.encaminhamentos import Encaminhamentos
 from ..models.encaminhamentos_incorretos import EncaminhamentosIncorretos
@@ -19,12 +20,13 @@ def logout():
     logout_user()
     return redirect(url_for("auth.login"))
 
-@routes_bp.route("/", methods=["GET", "POST"])
+@routes_bp.route("/", methods=["GET"])
+@login_required
 def index():
-    encaminhamentos_incorretos = EncaminhamentosIncorretos.query.all()
-    return render_template('listar_encaminhamentos_incorretos_validados.html', encaminhamentos_incorretos=encaminhamentos_incorretos, user=current_user)
+    return redirect(url_for('routes.listar_encaminhamentos_incorretos_validados'))
 
-@routes_bp.route("/encaminhamentos_para_validacao", methods=["GET", "POST"])
+@routes_bp.route("/encaminhamentos_para_validacao", methods=["GET"])
+@admin_required
 @login_required
 def encaminhamentos_para_validacao():
     encaminhamentos_para_validacao = EncaminhamentosIncorretos.query.filter(
@@ -45,25 +47,24 @@ def listar_meus_encaminhamentos_para_analise():
         encaminhamentos_incorretos = EncaminhamentosIncorretos.query.filter_by(analista=current_user.nome_sgd).filter_by(analise_analista="Não avaliado").all()
         return render_template('listar_meus_encaminhamentos_para_analise.html', encaminhamentos_incorretos=encaminhamentos_incorretos, user=current_user)
 
-@routes_bp.route("/adicionar_encaminhamento_incorreto_manual", methods=["GET", "POST"])
+@routes_bp.route("/adicionar_encaminhamento_incorreto_manual/", methods=["GET", "POST"])
+@admin_required
 @login_required
 def adicionar_encaminhamento_incorreto_manual():
     analistas = User.query.all()
+    if request.method == 'POST':
+        data = request.form.get('data')
+        data = datetime.strptime(str(data), '%Y-%m-%d').date()
+        tramite = request.form.get('tramite')
+        analista = request.form.get('analista')
+        ss = request.form.get('ss')
+        analise_analista = request.form.get('analise_analista')
+        novo_encaminhamento = EncaminhamentosIncorretos(ss=ss, analista=analista, data=data, tramite=tramite, analise_analista=analise_analista, validacao=True, status=True)
+        database.session.add(novo_encaminhamento)
+        database.session.commit()
+    else:
+        return render_template('adicionar_encaminhamento_incorreto_manual.html', analistas = analistas, user=current_user)
     return render_template('adicionar_encaminhamento_incorreto_manual.html', analistas = analistas, user=current_user)
-
-@routes_bp.route("/adiciona_encaminhamento_incorreto_manual/", methods=["GET", "POST"])
-@login_required
-def adiciona_encaminhamento_incorreto_manual():
-    data = request.form.get('data')
-    data = datetime.strptime(str(data), '%Y-%m-%d').date()
-    tramite = request.form.get('tramite')
-    analista = request.form.get('analista')
-    ss = request.form.get('ss')
-    analise_analista = request.form.get('analise_analista')
-    novo_encaminhamento = EncaminhamentosIncorretos(ss=ss, analista=analista, data=data, tramite=tramite, analise_analista=analise_analista, validacao=True, status=True)
-    database.session.add(novo_encaminhamento)
-    database.session.commit()
-    return redirect(url_for('routes.listar_meus_encaminhamentos_para_analise')) 
 
 @login_required
 def retorna_quantidade_encaminhamento_mes(query_encaminhamentos):
@@ -123,6 +124,7 @@ def ordenar_analistas(list_dict_analistas):
     return list_dict_analistas
 
 @routes_bp.route("/meta_quantidade_encaminhamentos_incorretos", methods=['GET'])
+@admin_required
 @login_required
 def meta_quantidade_encaminhamentos_incorretos():
     encaminhamentos_incorretos = EncaminhamentosIncorretos.query.filter_by(status=True, validacao=True)
@@ -132,6 +134,7 @@ def meta_quantidade_encaminhamentos_incorretos():
     return render_template('meta_quantidade_encaminhamentos_incorretos.html', dict_encaminhamentos_incorreto_mes = dict_encaminhamentos_incorreto_mes, user=current_user)
 
 @routes_bp.route("/meta_quantidade_encaminhamentos", methods=['GET'])
+@admin_required
 @login_required
 def meta_quantidade_encaminhamentos():
     encaminhamentos = Encaminhamentos.query.all()
@@ -141,12 +144,14 @@ def meta_quantidade_encaminhamentos():
     return render_template('meta_quantidade_encaminhamentos.html', dict_encaminhamentos_mes = dict_encaminhamentos_mes, user=current_user)
 
 @routes_bp.route('/ignorar_mes', methods=['POST', 'GET'])
+@admin_required
 @login_required
 def ignorar_mes():
     analistas = User.query.all()
     return render_template('ignorar_mes.html', analistas=analistas, user=current_user)
 
 @routes_bp.route('/adicionar_mes_a_ignorar/<int:id>/', methods=['POST', 'GET'])
+@admin_required
 @login_required
 def adicionar_mes_a_ignorar(id):
     analistas = User.query.all()
@@ -158,6 +163,7 @@ def adicionar_mes_a_ignorar(id):
     return render_template('ignorar_mes.html', analistas=analistas, user=current_user)
 
 @login_required
+@admin_required
 def verifica_mes_ignorado(mes, id_analista):
     meses_ignorados = IgnorarMes.query.filter_by(id_analista=id_analista, mes=mes).all()
     if meses_ignorados:
@@ -165,7 +171,6 @@ def verifica_mes_ignorado(mes, id_analista):
     else:
         return False
     
-@login_required
 def calcular_media(quantidade, total):
     if quantidade == 0:
         return 100.00
@@ -173,6 +178,7 @@ def calcular_media(quantidade, total):
         return round(100 - (quantidade / total * 100), 1)
 
 @login_required
+@admin_required
 def ordenar_meses(lista_encaminhamentos):
     try:
         encaminhamentos_meses_odenados = []
@@ -189,6 +195,7 @@ def ordenar_meses(lista_encaminhamentos):
         return render_template('erro.html', user=current_user)
 
 @login_required
+@admin_required
 def adiciona_meses_sem_encaminhamentos(lista_encaminhamentos):
     try:
         for mes_range in range(1, 13):
@@ -205,6 +212,7 @@ def adiciona_meses_sem_encaminhamentos(lista_encaminhamentos):
         return render_template('erro.html', user=current_user)
     
 @login_required
+@admin_required
 @routes_bp.route("/meta_percent_encaminhamentos_equipe", methods=['GET'])
 def meta_percent_encaminhamentos_equipe(encaminhamentos_por_analista_mes):
     try:
@@ -240,6 +248,7 @@ def meta_percent_encaminhamentos_equipe(encaminhamentos_por_analista_mes):
         return render_template('erro.html', user=current_user)  
           
 @routes_bp.route("/meta_percent_encaminhamentos", methods=['GET'])
+@admin_required
 @login_required
 def meta_percent_encaminhamentos():
     try:
@@ -317,6 +326,7 @@ def meta_percent_encaminhamentos():
         return render_template('erro.html', user=current_user)
 
 @routes_bp.route("/meta_percent_encaminhamentos_acumulado", methods=["GET"])
+@admin_required
 @login_required
 def meta_percent_encaminhamentos_acumulado():
     try:
@@ -437,6 +447,7 @@ def listar_encaminhamentos_incorretos_invalidados():
         return render_template('erro.html', user=current_user)
         
 @routes_bp.route('/atualiza_status_encaminhamento/<int:id>/', methods=["POST"])
+@admin_required
 @login_required
 def atualiza_status_encaminhamento(id):
     try:
@@ -448,6 +459,8 @@ def atualiza_status_encaminhamento(id):
         encaminhamento_incorreto.concordancia = concordancia_convertida_bool
         if concordancia_convertida_bool == True:
             encaminhamento_incorreto.status = True
+        else:
+            encaminhamento_incorreto.status = False
         database.session.commit()
         return redirect(url_for('routes.listar_meus_encaminhamentos_para_analise'))
     except Exception as e:
@@ -455,6 +468,7 @@ def atualiza_status_encaminhamento(id):
         return render_template('erro.html', user=current_user)
 
 @routes_bp.route("/valida_inavalida_encaminhamento/<int:id>/", methods=["POST"])
+@admin_required
 @login_required
 def valida_invalida_encaminhamento(id):
     try:
@@ -473,6 +487,7 @@ def valida_invalida_encaminhamento(id):
         return render_template('erro.html', user=current_user)
     
 @login_required
+@admin_required
 def exclui_encaminhamentos_duplicados(encaminhamentos, encaminhamentos_incorretos):
     lista_dict_exclusao = []
     for encaminhamento_incorreto in encaminhamentos_incorretos:
@@ -490,6 +505,7 @@ def exclui_encaminhamentos_duplicados(encaminhamentos, encaminhamentos_incorreto
     return encaminhamentos_sgd_fitlrados
 
 @login_required
+@admin_required
 def adiciona_encaminhamentos(encaminhamentos, encaminhamentos_incorretos):
     try:
         for encaminhamento in encaminhamentos:
@@ -538,6 +554,7 @@ def adiciona_encaminhamentos(encaminhamentos, encaminhamentos_incorretos):
         return render_template('erro.html', user=current_user)
     
 @login_required
+@admin_required
 @routes_bp.route("/alimentar_banco_invalidados", methods=['GET'])
 def alimentar_banco_invalidados():
     try:
@@ -558,6 +575,7 @@ def alimentar_banco_invalidados():
         return render_template('erro.html', user=current_user)
     
 @login_required
+@admin_required
 @routes_bp.route("/alimentar_banco_validados", methods=['GET'])
 def alimentar_banco_validados():
     arquivo_com_dados = pd.read_excel('dados_para_alimentar_o_banco/validados.xlsx')
@@ -574,6 +592,7 @@ def alimentar_banco_validados():
     return redirect(url_for('routes.listar_meus_encaminhamentos_para_analise'))
 
 @login_required
+@admin_required
 @routes_bp.route("/ultima_consulta_data", methods=['GET'])
 def ultima_consulta_data():
     try:
@@ -585,6 +604,7 @@ def ultima_consulta_data():
         return render_template('erro.html', user=current_user)
 
 @login_required
+@admin_required
 @routes_bp.route("/ultima_consulta", methods=['GET'])
 def adiciona_ultima_consulta():
     try:
@@ -599,6 +619,7 @@ def adiciona_ultima_consulta():
         return render_template('erro.html', user=current_user)
 
 @login_required
+@admin_required
 def consulta_encaminhamentos():
     try:
         conn = connecta_sgd()
@@ -614,6 +635,7 @@ def consulta_encaminhamentos():
         return render_template('erro.html', user=current_user)
 
 @login_required
+@admin_required
 def consulta_encaminhamentos_incorretos():
     try:
         conn = connecta_sgd()
@@ -631,6 +653,7 @@ def consulta_encaminhamentos_incorretos():
 
 @routes_bp.route("/atualiza_todos_encaminhamento/", methods=["POST"])
 @login_required
+@admin_required
 def atualiza_todos_encaminhamento():
     try:
         encaminhamentos = consulta_encaminhamentos()
