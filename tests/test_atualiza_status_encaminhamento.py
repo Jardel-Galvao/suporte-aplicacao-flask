@@ -1,10 +1,8 @@
-def test_meta_quantidade_encaminhamentos_total(client, app):
+def test_atualiza_status_encaminhamento(client, app):
     with app.app_context():
         from app.models.encaminhamentos_incorretos import EncaminhamentosIncorretos
-        from app.models.encaminhamentos import Encaminhamentos
-        from app.models.user import User
+        from datetime import date
         from app.models import database
-        from datetime import date 
 
         novo_usuario = {
             'username' : 'teste',
@@ -13,33 +11,35 @@ def test_meta_quantidade_encaminhamentos_total(client, app):
             'password' : '123456',
             'isAdmin' : True,
         }
+
         client.post('/registro', data=novo_usuario)
-        usuario = User.query.first()
+
         dados_login = {
             'username' : 'teste',
             'password' : '123456'
         }
-
         client.post('/login', data=dados_login)
-       
+        
         novo_encaminhamento_incorreto = EncaminhamentosIncorretos(
             data = date(2023, 1, 1),
             tramite = 1,
-            analista = usuario.nome_sgd,
+            analista = 'teste',
             ss = 1,
-            descricao_encaminahmento = 'Não deveria vir'
-        )
-
-        novo_encaminhamento_normal = Encaminhamentos(
-            data = date(2023, 1, 1),
-            tramite = 1,
-            analista = usuario.nome_sgd,
-            ss = 2
+            descricao_encaminahmento = 'Não deveria vir',
+            validacao = False,
+            status = True 
         )
 
         database.session.add(novo_encaminhamento_incorreto)
-        database.session.add(novo_encaminhamento_normal)
         database.session.commit()
 
-        response = client.get('/meta_quantidade_encaminhamentos')
-        assert b'<td >2</td>' in response.data
+        dados_atualizacao = {
+            'opcao_selecionada' : False,
+            'analise_analista' : 'Não concordo'
+        }
+
+        client.post('/atualiza_status_encaminhamento/1/', data=dados_atualizacao)
+        
+        encaminhamento = EncaminhamentosIncorretos.query.first()
+
+        assert encaminhamento.status  == False

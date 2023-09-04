@@ -1,4 +1,4 @@
-def test_meta_quantidade_encaminhamentos_total(client, app):
+def test_meta_quantidade_encaminhamentos_incorretos(client, app):
     with app.app_context():
         from app.models.encaminhamentos_incorretos import EncaminhamentosIncorretos
         from app.models.encaminhamentos import Encaminhamentos
@@ -27,19 +27,29 @@ def test_meta_quantidade_encaminhamentos_total(client, app):
             tramite = 1,
             analista = usuario.nome_sgd,
             ss = 1,
-            descricao_encaminahmento = 'Não deveria vir'
+            descricao_encaminahmento = 'Não deveria vir',
+            analise_analista = 'analise',
+            validacao = True,
+            status = True
+            
         )
 
-        novo_encaminhamento_normal = Encaminhamentos(
-            data = date(2023, 1, 1),
+        novo_encaminhamento_incorreto2 = EncaminhamentosIncorretos(
+            data = date(2023, 2, 1),
             tramite = 1,
             analista = usuario.nome_sgd,
-            ss = 2
+            ss = 2,
+            descricao_encaminahmento = 'Não deveria vir',
+            analise_analista = 'analise',
+            validacao = True,
+            status = True
+            
         )
 
         database.session.add(novo_encaminhamento_incorreto)
-        database.session.add(novo_encaminhamento_normal)
+        database.session.add(novo_encaminhamento_incorreto2)
         database.session.commit()
 
-        response = client.get('/meta_quantidade_encaminhamentos')
-        assert b'<td >2</td>' in response.data
+        response = client.get('/meta_quantidade_encaminhamentos_incorretos')
+        
+        assert b' <td >1</td>' in response.data

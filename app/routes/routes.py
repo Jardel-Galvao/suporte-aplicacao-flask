@@ -12,6 +12,7 @@ from ..models import database
 from flask_login import login_required, logout_user, current_user
 import pandas as pd
 import openpyxl
+import pytest
 
 routes_bp = Blueprint('routes', __name__)
 
@@ -127,21 +128,29 @@ def ordenar_analistas(list_dict_analistas):
 @admin_required
 @login_required
 def meta_quantidade_encaminhamentos_incorretos():
-    encaminhamentos_incorretos = EncaminhamentosIncorretos.query.filter_by(status=True, validacao=True)
-    dict_encaminhamentos_incorreto_mes = retorna_quantidade_encaminhamento_mes(encaminhamentos_incorretos)
-    dict_encaminhamentos_incorreto_mes = ordenar_meses(dict_encaminhamentos_incorreto_mes)
-    dict_encaminhamentos_incorreto_mes = ordenar_analistas(dict_encaminhamentos_incorreto_mes)
-    return render_template('meta_quantidade_encaminhamentos_incorretos.html', dict_encaminhamentos_incorreto_mes = dict_encaminhamentos_incorreto_mes, user=current_user)
-
+    try:
+        encaminhamentos_incorretos = EncaminhamentosIncorretos.query.filter_by(status=True, validacao=True)
+        dict_encaminhamentos_incorreto_mes = retorna_quantidade_encaminhamento_mes(encaminhamentos_incorretos)
+        dict_encaminhamentos_incorreto_mes = ordenar_meses(dict_encaminhamentos_incorreto_mes)
+        dict_encaminhamentos_incorreto_mes = ordenar_analistas(dict_encaminhamentos_incorreto_mes)
+        return render_template('meta_quantidade_encaminhamentos_incorretos.html', dict_encaminhamentos_incorreto_mes = dict_encaminhamentos_incorreto_mes, user=current_user)
+    except Exception as e:
+        flash(str(e))
+        return render_template('erro.html', user=current_user)  
+    
 @routes_bp.route("/meta_quantidade_encaminhamentos", methods=['GET'])
 @admin_required
 @login_required
 def meta_quantidade_encaminhamentos():
-    encaminhamentos = Encaminhamentos.query.all()
-    dict_encaminhamentos_mes = retorna_quantidade_encaminhamento_mes(encaminhamentos)
-    dict_encaminhamentos_mes = ordenar_meses(dict_encaminhamentos_mes)
-    dict_encaminhamentos_mes = ordenar_analistas(dict_encaminhamentos_mes)
-    return render_template('meta_quantidade_encaminhamentos.html', dict_encaminhamentos_mes = dict_encaminhamentos_mes, user=current_user)
+    try:
+        encaminhamentos = Encaminhamentos.query.all()
+        dict_encaminhamentos_mes = retorna_quantidade_encaminhamento_mes(encaminhamentos)
+        dict_encaminhamentos_mes = ordenar_meses(dict_encaminhamentos_mes)
+        dict_encaminhamentos_mes = ordenar_analistas(dict_encaminhamentos_mes)
+        return render_template('meta_quantidade_encaminhamentos.html', dict_encaminhamentos_mes = dict_encaminhamentos_mes, user=current_user)
+    except Exception as e:
+        flash(str(e))
+        return render_template('erro.html', user=current_user)  
 
 @routes_bp.route('/ignorar_mes', methods=['POST', 'GET'])
 @admin_required
@@ -162,8 +171,6 @@ def adicionar_mes_a_ignorar(id):
     database.session.commit()
     return render_template('ignorar_mes.html', analistas=analistas, user=current_user)
 
-@login_required
-@admin_required
 def verifica_mes_ignorado(mes, id_analista):
     meses_ignorados = IgnorarMes.query.filter_by(id_analista=id_analista, mes=mes).all()
     if meses_ignorados:
@@ -177,39 +184,27 @@ def calcular_media(quantidade, total):
     else:
         return round(100 - (quantidade / total * 100), 1)
 
-@login_required
-@admin_required
 def ordenar_meses(lista_encaminhamentos):
-    try:
-        encaminhamentos_meses_odenados = []
-        for encaminhamento in lista_encaminhamentos:
-            meses_ordenados = sorted(encaminhamento['meses'], key=lambda x: x['mes'])
-            dict_encaminhamentos_ordenados = {
-                'analista': encaminhamento['analista'],
-                'meses': meses_ordenados
-            }
-            encaminhamentos_meses_odenados.append(dict_encaminhamentos_ordenados)
-        return encaminhamentos_meses_odenados
-    except Exception as e:
-        flash(str(e))
-        return render_template('erro.html', user=current_user)
+    encaminhamentos_meses_odenados = []
+    for encaminhamento in lista_encaminhamentos:
+        meses_ordenados = sorted(encaminhamento['meses'], key=lambda x: x['mes'])
+        dict_encaminhamentos_ordenados = {
+            'analista': encaminhamento['analista'],
+            'meses': meses_ordenados
+        }
+        encaminhamentos_meses_odenados.append(dict_encaminhamentos_ordenados)
+    return encaminhamentos_meses_odenados
 
-@login_required
-@admin_required
 def adiciona_meses_sem_encaminhamentos(lista_encaminhamentos):
-    try:
-        for mes_range in range(1, 13):
-                for encaminhamento in lista_encaminhamentos:
-                    if not any(mes for mes in encaminhamento['meses'] if mes['mes'] == mes_range):
-                                novo_mes_zerado = {
-                                    'mes' : mes_range,
-                                    'media' : 0,
-                                }
-                                encaminhamento['meses'].append(novo_mes_zerado)
-        return lista_encaminhamentos
-    except Exception as e:
-        flash(str(e))
-        return render_template('erro.html', user=current_user)
+    for mes_range in range(1, 13):
+            for encaminhamento in lista_encaminhamentos:
+                if not any(mes for mes in encaminhamento['meses'] if mes['mes'] == mes_range):
+                            novo_mes_zerado = {
+                                'mes' : mes_range,
+                                'media' : 0,
+                            }
+                            encaminhamento['meses'].append(novo_mes_zerado)
+    return lista_encaminhamentos
     
 @login_required
 @admin_required
@@ -454,7 +449,7 @@ def atualiza_status_encaminhamento(id):
         concordancia_value = request.form.get('opcao_selecionada')
         concordancia_convertida_bool = concordancia_value.lower() == "true" 
         analise_analista = request.form.get('analise_analista')
-        encaminhamento_incorreto = EncaminhamentosIncorretos.query.get(id)
+        encaminhamento_incorreto = EncaminhamentosIncorretos.query.filter_by(id=id).first()
         encaminhamento_incorreto.analise_analista = analise_analista
         encaminhamento_incorreto.concordancia = concordancia_convertida_bool
         if concordancia_convertida_bool == True:
@@ -462,7 +457,7 @@ def atualiza_status_encaminhamento(id):
         else:
             encaminhamento_incorreto.status = False
         database.session.commit()
-        return redirect(url_for('routes.listar_meus_encaminhamentos_para_analise'))
+        return render_template('atualiza_status_encaminhamento.html', user=current_user)
     except Exception as e:
         flash(str(e))
         return render_template('erro.html', user=current_user)
@@ -475,7 +470,7 @@ def valida_invalida_encaminhamento(id):
         validacao_value = request.form.get('opcao_selecionada')
         descricao_validacao = request.form.get('descricao_validacao')
         validacao_convertida_bool = validacao_value.lower() == "true" 
-        encaminhamento_incorreto = EncaminhamentosIncorretos.query.get(id)
+        encaminhamento_incorreto = EncaminhamentosIncorretos.query.filter_by(id=id).first()
         encaminhamento_incorreto.validacao = validacao_convertida_bool
         encaminhamento_incorreto.status = True
         encaminhamento_incorreto.descricao_validacao = descricao_validacao

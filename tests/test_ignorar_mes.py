@@ -11,7 +11,6 @@ def test_ignorar_mes(client, app):
             'isAdmin' : True,
         }
         client.post('/registro', data=novo_usuario)
-        usuario = User.query.first()
 
         dados_login = {
             'username' : 'teste',
