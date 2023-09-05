@@ -72,6 +72,16 @@ Lista a quantidade total de encaminhamentos incorretos a terceiros para cada ana
 
 <b>11ª Atualizar encaminhamentos </b>
 
-Busca no banco de dados do suporte novos encaminhamentos para que seja montado o calculo da meta.
+Busca no banco de dados do suporte através de uma conexão ODBC novos encaminhamentos para que seja montado o calculo da meta. Durante a busca dos dados os dados são tratados e organizados.
 
 <a href="https://imgur.com/5uGnj7a"><img src="https://i.imgur.com/5uGnj7a.png" title="source: imgur.com" /></a>
+
+<h2 align="center">Testes</h2>
+
+Essa aplicação está com cobertura de testes em 71%.
+
+<h2 align="center">Conclusão</h2>
+
+Esse foi um projeto desafiador, como estou iniciando ainda na programação passei por muitos desafios. O código tem muito a melhorar, acredito que daria para melhorar uns 90%, porém é apenas um passo, para o inicio de uma grande evolução.
+
+Deixo esse projeto público para análise.
