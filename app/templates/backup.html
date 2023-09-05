@@ -9,6 +9,7 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
+      text-align: center;
     }
 
     header {
@@ -28,7 +29,6 @@
     header nav ul li {
       display: inline-block;
       margin-right: 20px;
-      padding: 15px
     }
 
     header nav ul li a {
@@ -58,24 +58,43 @@
       padding: 8px;
       font-size: 14px;
     }
+
+    th {
+      background-color: #f2f2f
+    }
     .analise_analista {
       width: 800px;
       height: 60px;
     }
-
-    th {
-      background-color: #f2f2f2;
+    .input_analise_analista{
+      width: 700px;
+      height: 50px;
+    }
+    .button_envia_analise_analista{
+        background-color: #FFA500;
+        color: #ffffff;
+        border: none;
+        padding: 5px 10px;
+        font-size: 11px;
+        cursor: pointer;
     }
     .form-container {
       display: flex;
       align-items: center;
     }
-
     .form-container form {
       margin-right: 10px;
     }
-    
-    /* Estilos para o menu suspenso */
+    .flash-messages{
+      display: block;
+      text-align:center;
+      margin: 60px;
+      font-family: Arial;
+      background-color: #999999;
+      padding: 40px;
+      color: #8B0000;
+      font-weight: bold;
+    }
     .dropdown-content {
       display: none;
       position: absolute;
@@ -98,9 +117,6 @@
 
     .dropdown-content li:hover {
       background-color: #FF8000;
-    }
-    header nav ul li:hover{
-      background-color: #FFA500;
     }
   </style>
 </head>
@@ -131,59 +147,16 @@
     </nav>
     {% if user.is_authenticated and user.isAdmin %}
     <div class="form-container">
-          <form action="{{ url_for('routes.atualiza_todos_encaminhamento') }}" method="post">
-        <input type="hidden" name="atualiza_encaminhamentos_incorretos" value="atualiza_encaminhamentos_incorretos">
-        <button type="submit">Atualizar Encaminhamentos</button>
-      </form>
+        <form action="{{ url_for('routes.atualiza_todos_encaminhamento') }}" method="post">
+          <input type="hidden" name="atualiza_encaminhamentos_incorretos" value="atualiza_encaminhamentos_incorretos">
+          <button type="submit">Atualizar Encaminhamentos</button>
+        </form>
     {% endif %}
     <form action="{{ url_for('routes.logout') }}" method="post">
       <button type="submit">Logout</button>
       </form>
     </div>
   </header>
-
-  <!-- Tabela de itens -->
-  <table>
-    <thead>
-      <tr>
-        <th>SS</th>
-        <th>Data</th>
-        <th>Trâmite</th>
-        <th>Analista</th>
-        <th>Descrição do Encaminhamento</th>
-        <th>Classificação</th>
-        <th>Módulo</th>
-        <th>Tópico</th>
-        <th>Análise Analista</th>
-        <th>Descrição validacao</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for encaminhamento in encaminhamentos %}
-      <tr>
-        <td>{{ encaminhamento['ss'] }}</td>
-        <td>{{ encaminhamento['data'] }}</td>
-        <td>{{ encaminhamento['tramite'] }}</td>
-        <td>{{ encaminhamento['analista'] }}</td>
-        <td>{{ encaminhamento['descricao_encaminahmento'] }}</td>
-        <td>{{ encaminhamento['classificacao'] }}</td>
-        <td>{{ encaminhamento['modulo'] }}</td>
-        <td>{{ encaminhamento['topico'] }}</td>
-        <td class="analise_analista">{{ encaminhamento['analise_analista'] }}</td>
-        <td class="analise_analista">{{ encaminhamento['descricao_validacao'] }}</td>
-        <!-- ... (outras colunas) ... -->
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- Seu código JavaScript pode ser incluído aqui -->
-  
-  <script>
-    function chamarFuncaoFlask() {
-      // Adicione o código JavaScript necessário para chamar a função do Flask aqui
-      // ...
-    }
-  </script>
+    <b>Backup realizado!</b>
 </body>
 </html>

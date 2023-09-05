@@ -12,7 +12,7 @@ from ..models import database
 from flask_login import login_required, logout_user, current_user
 import pandas as pd
 import openpyxl
-import pytest
+from ..libs.backup import realizar_backup
 
 routes_bp = Blueprint('routes', __name__)
 
@@ -25,6 +25,17 @@ def logout():
 @login_required
 def index():
     return redirect(url_for('routes.listar_encaminhamentos_incorretos_validados'))
+
+@routes_bp.route("/backup", methods=['GET', 'POST'])
+@admin_required
+@login_required
+def backup():
+    try:
+        caminho_backup = realizar_backup()
+        return render_template('backup.html', user=current_user)
+    except Exception as e:
+        flash(str(e))
+        return render_template('erro.html', user=current_user) 
 
 @routes_bp.route("/encaminhamentos_para_validacao", methods=["GET"])
 @admin_required
@@ -496,7 +507,6 @@ def exclui_encaminhamentos_duplicados(encaminhamentos, encaminhamentos_incorreto
                 )
     trupla_itens_exclusao = [(encaminhamento["ss"], encaminhamento["tramite"]) for encaminhamento in lista_dict_exclusao]
     encaminhamentos_sgd_fitlrados = [encaminhamento for encaminhamento in encaminhamentos if (encaminhamento.ss, encaminhamento.tramite) not in trupla_itens_exclusao]
-
     return encaminhamentos_sgd_fitlrados
 
 @login_required
@@ -618,7 +628,7 @@ def adiciona_ultima_consulta():
 def consulta_encaminhamentos():
     try:
         conn = connecta_sgd()
-        sql_statements = import_sql_file("sql/consulta_encaminhamentos.sql")
+        sql_statements = import_sql_file("app/sql/consulta_encaminhamentos.sql")
         cursor = conn.cursor()
         data_ultima_consulta = DataConsultaSgd.query.filter_by(id=1).first()
         ontem = datetime.today() - timedelta(days=1)
@@ -634,7 +644,7 @@ def consulta_encaminhamentos():
 def consulta_encaminhamentos_incorretos():
     try:
         conn = connecta_sgd()
-        sql_statements = import_sql_file("sql/consulta_encaminhamentos_incorretos.sql")
+        sql_statements = import_sql_file("app/sql/consulta_encaminhamentos_incorretos.sql")
         cursor = conn.cursor()
         data_ultima_consulta = DataConsultaSgd.query.filter_by(id=1).first()
         ontem = datetime.today() - timedelta(days=1)
